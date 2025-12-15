@@ -1,0 +1,49 @@
+package com.delivery.shipmentservice.service;
+
+import org.springframework.stereotype.Service;
+import com.delivery.shipmentservice.model.Shipment;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class ShipmentService {
+
+    private final List<Shipment> shipments = new ArrayList<>();
+
+    public ShipmentService() {
+        shipments.add(new Shipment("1", "Ali", "Veli", "Delivered"));
+        shipments.add(new Shipment("2", "Ayşe", "Fatma", "In Transit"));
+    }
+
+    public List<Shipment> getAllShipments() {
+        return shipments;
+    }
+
+    public Shipment getById(String id) {
+        return shipments.stream()
+                .filter(s -> s.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public Shipment createShipment(Shipment shipment) {
+        shipment.setId(UUID.randomUUID().toString());
+        shipment.setStatus("Created");
+        shipments.add(shipment);
+        return shipment;
+    }
+
+    public Shipment updateStatus(String id, String status) {
+        Shipment shipment = getById(id);
+        if (shipment != null) {
+            shipment.setStatus(status);
+        }
+        return shipment;
+    }
+
+    public void deleteShipment(String id) {
+        shipments.removeIf(s -> s.getId().equals(id));
+    }
+}
