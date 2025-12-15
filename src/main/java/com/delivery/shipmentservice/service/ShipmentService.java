@@ -1,7 +1,8 @@
 package com.delivery.shipmentservice.service;
 
-import org.springframework.stereotype.Service;
+import com.delivery.shipmentservice.event.ShipmentEventPublisher;
 import com.delivery.shipmentservice.model.Shipment;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +12,12 @@ import java.util.UUID;
 public class ShipmentService {
 
     private final List<Shipment> shipments = new ArrayList<>();
+    private final ShipmentEventPublisher publisher;   // 🔹 1️⃣ EKLENDİ
 
-    public ShipmentService() {
+    // 🔹 2️⃣ CONSTRUCTOR DEĞİŞTİ
+    public ShipmentService(ShipmentEventPublisher publisher) {
+        this.publisher = publisher;
+
         shipments.add(new Shipment("1", "Ali", "Veli", "Delivered"));
         shipments.add(new Shipment("2", "Ayşe", "Fatma", "In Transit"));
     }
@@ -35,10 +40,14 @@ public class ShipmentService {
         return shipment;
     }
 
+    // 🔹 3️⃣ SADECE BURAYA 1 SATIR EKLİYORUZ
     public Shipment updateStatus(String id, String status) {
         Shipment shipment = getById(id);
         if (shipment != null) {
             shipment.setStatus(status);
+
+            // 🚀 Kafka mesajı
+            publisher.publishStatusChanged(id, status);
         }
         return shipment;
     }
