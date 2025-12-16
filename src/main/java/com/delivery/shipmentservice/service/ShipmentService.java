@@ -2,57 +2,50 @@ package com.delivery.shipmentservice.service;
 
 import com.delivery.shipmentservice.event.ShipmentEventPublisher;
 import com.delivery.shipmentservice.model.Shipment;
+import com.delivery.shipmentservice.repository.ShipmentRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 public class ShipmentService {
 
-    private final List<Shipment> shipments = new ArrayList<>();
-    private final ShipmentEventPublisher publisher;   // 🔹 1️⃣ EKLENDİ
+    private final ShipmentRepository repository;
+    private final ShipmentEventPublisher publisher;
 
-    // 🔹 2️⃣ CONSTRUCTOR DEĞİŞTİ
-    public ShipmentService(ShipmentEventPublisher publisher) {
+    public ShipmentService(ShipmentRepository repository, ShipmentEventPublisher publisher) {
+        this.repository = repository;
         this.publisher = publisher;
-
-        shipments.add(new Shipment("1", "Ali", "Veli", "Delivered"));
-        shipments.add(new Shipment("2", "Ayşe", "Fatma", "In Transit"));
     }
 
     public List<Shipment> getAllShipments() {
-        return shipments;
+        return repository.findAll();
     }
 
     public Shipment getById(String id) {
-        return shipments.stream()
-                .filter(s -> s.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        return repository.findById(id).orElse(null);
     }
 
     public Shipment createShipment(Shipment shipment) {
         shipment.setId(UUID.randomUUID().toString());
         shipment.setStatus("Created");
-        shipments.add(shipment);
-        return shipment;
+        return repository.save(shipment);
     }
 
-    // 🔹 3️⃣ SADECE BURAYA 1 SATIR EKLİYORUZ
     public Shipment updateStatus(String id, String status) {
         Shipment shipment = getById(id);
         if (shipment != null) {
             shipment.setStatus(status);
+            repository.save(shipment);
 
-            // 🚀 Kafka mesajı
+            // Kafka event gönder
             publisher.publishStatusChanged(id, status);
         }
         return shipment;
     }
 
     public void deleteShipment(String id) {
-        shipments.removeIf(s -> s.getId().equals(id));
+        repository.deleteById(id);
     }
 }
