@@ -5,52 +5,108 @@ services:
   postgres:
     image: postgres:15
     container_name: pg-shipment
+    restart: always
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://pg-shipment:5432/shipmentdb
       POSTGRES_DB: shipmentdb
+      POSTGRES_USER: shipment
       POSTGRES_PASSWORD: 12345
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - delivery-net
 
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin-shipment
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@shipment.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - delivery-net
 
   zookeeper:
-    image: confluentinc/cp-zookeeper
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - delivery-net
 
   kafka:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
     depends_on:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    networks:
+      - delivery-net
 
   shipment-service:
     build: ./shipment-service
+    container_name: shipment-service
     ports:
-      - "8081:8080"
+      - "8081:8081"
     depends_on:
+      - postgres
       - kafka
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://pg-shipment:5432/shipmentdb
+      SPRING_DATASOURCE_USERNAME: shipment
+      SPRING_DATASOURCE_PASSWORD: 12345
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - delivery-net
 
   notification-service:
     build: ./notification-service
+    container_name: notification-service
     ports:
-      - "8082:8080"
+      - "8082:8082"
     depends_on:
       - kafka
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - delivery-net
 
   courier-service:
     build: ./courier-service
+    container_name: courier-service
     ports:
-      - "8083:8080"
+      - "8083:8083"
+    networks:
+      - delivery-net
 
   api-gateway:
     build: ./gateway-service
+    container_name: api-gateway
     ports:
       - "8080:8080"
     depends_on:
       - shipment-service
       - courier-service
+    networks:
+      - delivery-net
+
+volumes:
+  postgres_data:
+
+networks:
+  delivery-net:
+    driver: bridge
