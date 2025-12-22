@@ -17,8 +17,7 @@ public class ShipmentService {
     private final ShipmentRepository repository;
     private final ShipmentEventPublisher publisher;
 
-    public ShipmentService(ShipmentRepository repository,
-                           ShipmentEventPublisher publisher) {
+    public ShipmentService(ShipmentRepository repository, ShipmentEventPublisher publisher) {
         this.repository = repository;
         this.publisher = publisher;
     }
