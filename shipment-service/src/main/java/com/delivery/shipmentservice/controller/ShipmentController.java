@@ -23,10 +23,10 @@ import com.delivery.shipmentservice.service.ShipmentService;
 @RequestMapping("/shipments")
 public class ShipmentController {
 
-    private final ShipmentService shipmentService;
+    private final ShipmentService service;
 
-    public ShipmentController(ShipmentService shipmentService) {
-        this.shipmentService = shipmentService;
+    public ShipmentController(ShipmentService service) {
+        this.service = service;
     }
 
     // GET /shipments - Tüm gönderileri listele
