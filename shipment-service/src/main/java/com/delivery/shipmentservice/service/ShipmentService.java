@@ -1,6 +1,7 @@
 package com.delivery.shipmentservice.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,8 @@ public class ShipmentService {
     private final ShipmentRepository repository;
     private final ShipmentEventPublisher publisher;
 
-    public ShipmentService(ShipmentRepository repository, ShipmentEventPublisher publisher) {
+    public ShipmentService(ShipmentRepository repository,
+                           ShipmentEventPublisher publisher) {
         this.repository = repository;
         this.publisher = publisher;
     }
@@ -31,17 +33,11 @@ public class ShipmentService {
 
     public Shipment createShipment(String sender, String receiver) {
         Shipment shipment = new Shipment(sender, receiver);
-        shipment.setId(UUID.randomUUID());
 
         Shipment saved = repository.save(shipment);
+publisher.publishStatusChanged(saved);
+ return saved;
 
-        // Kafka event (CREATED)
-        publisher.publishStatusChanged(
-                saved.getId().toString(),
-                saved.getStatus().name()
-        );
-
-        return saved;
     }
 
     public Shipment updateStatus(UUID id, ShipmentStatus status) {
@@ -50,11 +46,7 @@ public class ShipmentService {
 
         Shipment updated = repository.save(shipment);
 
-        // Kafka event
-        publisher.publishStatusChanged(
-                id.toString(),
-                status.name()
-        );
+      publisher.publishStatusChanged(updated);
 
         return updated;
     }
@@ -62,5 +54,4 @@ public class ShipmentService {
     public void deleteShipment(UUID id) {
         repository.deleteById(id);
     }
-
 }

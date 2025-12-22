@@ -11,7 +11,6 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
 
 import com.delivery.shipmentservice.event.ShipmentStatusChangedEvent;
 
@@ -21,9 +20,11 @@ public class KafkaConfig {
     @Bean
     public ProducerFactory<String, ShipmentStatusChangedEvent> producerFactory() {
         Map<String, Object> props = new HashMap<>();
+
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+
         return new DefaultKafkaProducerFactory<>(props);
     }
 
@@ -31,5 +32,4 @@ public class KafkaConfig {
     public KafkaTemplate<String, ShipmentStatusChangedEvent> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
-
 }

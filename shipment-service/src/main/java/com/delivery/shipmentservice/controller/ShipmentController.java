@@ -1,51 +1,52 @@
 package com.delivery.shipmentservice.controller;
 
-import com.delivery.shipmentservice.model.Shipment;
-import com.delivery.shipmentservice.service.ShipmentService;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import com.delivery.shipmentservice.model.Shipment;
+import com.delivery.shipmentservice.model.ShipmentStatus;
+import com.delivery.shipmentservice.service.ShipmentService;
 
 @RestController
 @RequestMapping("/shipments")
 public class ShipmentController {
 
-    private final ShipmentService shipmentService;
+    private final ShipmentService service;
 
-    public ShipmentController(ShipmentService shipmentService) {
-        this.shipmentService = shipmentService;
+    public ShipmentController(ShipmentService service) {
+        this.service = service;
     }
 
-    // GET /shipments
     @GetMapping
-    public List<Shipment> getShipments() {
-        return shipmentService.getAllShipments();
+    public List<Shipment> getAll() {
+        return service.getAllShipments();
     }
 
-    // GET /shipments/{id}
     @GetMapping("/{id}")
-    public Shipment getShipment(@PathVariable String id) {
-        return shipmentService.getById(id);
+    public Shipment getById(@PathVariable UUID id) {
+        return service.getById(id);
     }
 
-    // POST /shipments
     @PostMapping
-    public Shipment createShipment(@RequestBody Shipment shipment) {
-        return shipmentService.createShipment(shipment);
+    public Shipment create(@RequestBody Shipment shipment) {
+        return service.createShipment(
+                shipment.getSender(),
+                shipment.getReceiver()
+        );
     }
 
-    // PUT /shipments/{id}/status
     @PutMapping("/{id}/status")
     public Shipment updateStatus(
-            @PathVariable String id,
-            @RequestParam String status) {
-        return shipmentService.updateStatus(id, status);
+            @PathVariable UUID id,
+            @RequestParam ShipmentStatus status
+    ) {
+        return service.updateStatus(id, status);
     }
 
-    // DELETE /shipments/{id}
     @DeleteMapping("/{id}")
-    public void deleteShipment(@PathVariable String id) {
-        shipmentService.deleteShipment(id);
+    public void delete(@PathVariable UUID id) {
+        service.deleteShipment(id);
     }
 }
