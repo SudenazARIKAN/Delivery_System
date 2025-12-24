@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
 
@@ -22,18 +22,16 @@ services:
     networks:
       - delivery-net
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin-shipment
+  courier-db:
+    image: postgres:16
+    container_name: courier-db
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@shipment.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      POSTGRES_DB: courierdb
+      POSTGRES_USER: courier
+      POSTGRES_PASSWORD: courier
     ports:
-      - "5050:80"
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - "5434:5432"
     networks:
       - delivery-net
 
@@ -103,6 +101,13 @@ services:
     restart: always
     ports:
       - "8083:8083"
+    depends_on:
+      - courier-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://courier-db:5432/courierdb
+      SPRING_DATASOURCE_USERNAME: courier
+      SPRING_DATASOURCE_PASSWORD: courier
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     networks:
       - delivery-net
 

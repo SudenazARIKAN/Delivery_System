@@ -52,21 +52,24 @@ public class ShipmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+
+
     // PUT /shipments/{id}/status - Gönderi durumunu güncelle
-    @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(
-            @PathVariable UUID id,
-            @RequestParam String status) {
-        try {
-            Shipment updated = shipmentService.updateStatus(id, status);
-            if (updated == null) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+
+   @PutMapping("/{id}/status")
+public ResponseEntity<Shipment> updateStatus(
+        @PathVariable UUID id,
+        @RequestParam ShipmentStatus status
+) {
+    Shipment updated = shipmentService.updateStatus(id, status);
+    return ResponseEntity.ok(updated);
+}
+
+          
+       //  catch (IllegalArgumentException e) {
+          //  return ResponseEntity.badRequest().body(e.getMessage());
+       // }
+    
 
     // DELETE /shipments/{id} - Gönderiyi sil
     @DeleteMapping("/{id}")
