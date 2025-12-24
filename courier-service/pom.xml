@@ -47,11 +47,18 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
         
-        <!-- H2 Database (In-Memory) -->
+        <!-- PostgreSQL Driver -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <!-- H2 Database (Test için) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>runtime</scope>
+            <scope>test</scope>
         </dependency>
         
         <!-- Spring Boot DevTools -->

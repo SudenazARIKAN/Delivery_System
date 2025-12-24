@@ -32,6 +32,13 @@ services:
       POSTGRES_PASSWORD: courier
     ports:
       - "5434:5432"
+    volumes:
+      - courier_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U courier -d courierdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - delivery-net
 
@@ -102,12 +109,16 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      - courier-db
+      courier-db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://courier-db:5432/courierdb
       SPRING_DATASOURCE_USERNAME: courier
       SPRING_DATASOURCE_PASSWORD: courier
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     networks:
       - delivery-net
 
@@ -125,6 +136,7 @@ services:
 
 volumes:
   postgres_data:
+  courier_data:
 
 networks:
   delivery-net:
