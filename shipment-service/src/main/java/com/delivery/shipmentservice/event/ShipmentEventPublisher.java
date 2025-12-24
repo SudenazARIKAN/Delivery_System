@@ -1,23 +1,23 @@
 package com.delivery.shipmentservice.event;
 
-import com.delivery.shipmentservice.model.Shipment;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ShipmentEventPublisher {
 
-    private final KafkaTemplate<String, Shipment> kafkaTemplate;
+    private final KafkaTemplate<String, ShipmentStatusChangedEvent> kafkaTemplate;
 
-    public ShipmentEventPublisher(KafkaTemplate<String, Shipment> kafkaTemplate) {
+    public ShipmentEventPublisher(
+            KafkaTemplate<String, ShipmentStatusChangedEvent> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void publishStatusChanged(Shipment shipment) {
+    public void publishStatusChanged(ShipmentStatusChangedEvent event) {
         kafkaTemplate.send(
-                "shipment-status-topic",
-                shipment.getId().toString(),
-                shipment
+                "shipment.status.changed",
+                event.getShipmentId(),
+                event
         );
     }
 }

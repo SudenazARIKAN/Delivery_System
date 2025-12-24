@@ -3,7 +3,17 @@ package com.delivery.shipmentservice.controller;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.delivery.shipmentservice.model.Shipment;
 import com.delivery.shipmentservice.model.ShipmentStatus;
@@ -13,41 +23,64 @@ import com.delivery.shipmentservice.service.ShipmentService;
 @RequestMapping("/shipments")
 public class ShipmentController {
 
-    private final ShipmentService service;
+    private final ShipmentService shipmentService;
 
-    public ShipmentController(ShipmentService service) {
-        this.service = service;
+    public ShipmentController(ShipmentService shipmentService) {
+        this.shipmentService = shipmentService;
     }
 
+    // GET /shipments - Tüm gönderileri listele
     @GetMapping
-    public List<Shipment> getAll() {
-        return service.getAllShipments();
+    public ResponseEntity<List<Shipment>> getShipments() {
+        return ResponseEntity.ok(shipmentService.getAllShipments());
     }
 
+    // GET /shipments/{id} - ID ile gönderi bul
     @GetMapping("/{id}")
-    public Shipment getById(@PathVariable UUID id) {
-        return service.getById(id);
+    public ResponseEntity<Shipment> getShipment(@PathVariable UUID id) {
+        Shipment shipment = shipmentService.getById(id);
+        if (shipment == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(shipment);
     }
 
+    // POST /shipments - Yeni gönderi oluştur
     @PostMapping
-    public Shipment create(@RequestBody Shipment shipment) {
-        return service.createShipment(
-                shipment.getSender(),
-                shipment.getReceiver()
-        );
+    public ResponseEntity<Shipment> createShipment(@RequestBody Shipment shipment) {
+        Shipment created = shipmentService.createShipment(shipment);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    ///////////
-    @PutMapping("/{id}/status")
-    public Shipment updateStatus(
-            @PathVariable UUID id,
-            @RequestParam ShipmentStatus status
-    ) {
-        return service.updateStatus(id, status);
-    }
 
+
+    // PUT /shipments/{id}/status - Gönderi durumunu güncelle
+
+   @PutMapping("/{id}/status")
+public ResponseEntity<Shipment> updateStatus(
+        @PathVariable UUID id,
+        @RequestParam ShipmentStatus status
+) {
+    Shipment updated = shipmentService.updateStatus(id, status);
+    return ResponseEntity.ok(updated);
+}
+
+          
+       //  catch (IllegalArgumentException e) {
+          //  return ResponseEntity.badRequest().body(e.getMessage());
+       // }
+    
+
+    // DELETE /shipments/{id} - Gönderiyi sil
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) {
-        service.deleteShipment(id);
+    public ResponseEntity<Void> deleteShipment(@PathVariable UUID id) {
+        shipmentService.deleteShipment(id);
+        return ResponseEntity.noContent().build();
+    }
+    
+    // GET /shipments/statuses - Kullanılabilir tüm statusları listele
+    @GetMapping("/statuses")
+    public ResponseEntity<ShipmentStatus[]> getAvailableStatuses() {
+        return ResponseEntity.ok(ShipmentStatus.values());
     }
 }

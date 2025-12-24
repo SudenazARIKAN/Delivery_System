@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
 
@@ -14,26 +14,31 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shipment -d shipmentdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - delivery-net
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin-shipment
+  courier-db:
+    image: postgres:16
+    container_name: courier-db
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@shipment.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      POSTGRES_DB: courierdb
+      POSTGRES_USER: courier
+      POSTGRES_PASSWORD: courier
     ports:
-      - "5050:80"
-    depends_on:
-      - postgres
+      - "5434:5432"
     networks:
       - delivery-net
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     container_name: zookeeper
+    restart: always
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -43,6 +48,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     container_name: kafka
+    restart: always
     depends_on:
       - zookeeper
     environment:
@@ -59,11 +65,14 @@ services:
   shipment-service:
     build: ./shipment-service
     container_name: shipment-service
+    restart: always
     ports:
       - "8081:8081"
     depends_on:
-      - postgres
-      - kafka
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://pg-shipment:5432/shipmentdb
@@ -76,6 +85,7 @@ services:
   notification-service:
     build: ./notification-service
     container_name: notification-service
+    restart: always
     ports:
       - "8082:8082"
     depends_on:
@@ -88,14 +98,23 @@ services:
   courier-service:
     build: ./courier-service
     container_name: courier-service
+    restart: always
     ports:
       - "8083:8083"
+    depends_on:
+      - courier-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://courier-db:5432/courierdb
+      SPRING_DATASOURCE_USERNAME: courier
+      SPRING_DATASOURCE_PASSWORD: courier
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     networks:
       - delivery-net
 
   api-gateway:
     build: ./gateway-service
     container_name: api-gateway
+    restart: always
     ports:
       - "8080:8080"
     depends_on:

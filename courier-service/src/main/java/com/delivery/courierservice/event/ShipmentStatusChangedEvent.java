@@ -1,4 +1,4 @@
-package com.delivery.shipmentservice.event;
+package com.delivery.courierservice.event;
 
 public class ShipmentStatusChangedEvent {
 
@@ -9,11 +9,8 @@ public class ShipmentStatusChangedEvent {
 
     public ShipmentStatusChangedEvent() {}
 
-    public ShipmentStatusChangedEvent(
-            String shipmentId,
-            String sender,
-            String receiver,
-            String status) {
+    public ShipmentStatusChangedEvent(String shipmentId, String sender, 
+                                     String receiver, String status) {
         this.shipmentId = shipmentId;
         this.sender = sender;
         this.receiver = receiver;
@@ -49,8 +46,18 @@ public class ShipmentStatusChangedEvent {
     public void setReceiver(String receiver) {
         this.receiver = receiver;
     }
-    
+
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "ShipmentStatusChangedEvent{" +
+                "shipmentId='" + shipmentId + '\'' +
+                ", sender='" + sender + '\'' +
+                ", receiver='" + receiver + '\'' +
+                ", status='" + status + '\'' +
+                '}';
     }
 }
