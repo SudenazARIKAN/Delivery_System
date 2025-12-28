@@ -42,6 +42,42 @@ services:
     networks:
       - delivery-net
 
+  notification-db:
+    image: postgres:16
+    container_name: notification-db
+    restart: always
+    environment:
+      POSTGRES_DB: notificationdb
+      POSTGRES_USER: notification
+      POSTGRES_PASSWORD: 12345
+    ports:
+      - "5435:5432"
+    volumes:
+      - notification_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notification -d notificationdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - delivery-net
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin-shipment
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@shipment.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+      - courier-db
+      - notification-db
+    networks:
+      - delivery-net
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     container_name: zookeeper
@@ -96,9 +132,30 @@ services:
     ports:
       - "8082:8082"
     depends_on:
-      - kafka
+      kafka:
+        condition: service_started
+      notification-db:
+        condition: service_healthy
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/notificationdb
+      SPRING_DATASOURCE_USERNAME: notification
+      SPRING_DATASOURCE_PASSWORD: 12345
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - delivery-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: always
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: delivery-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      - kafka
     networks:
       - delivery-net
 
@@ -131,12 +188,14 @@ services:
     depends_on:
       - shipment-service
       - courier-service
+      - notification-service
     networks:
       - delivery-net
 
 volumes:
   postgres_data:
   courier_data:
+  notification_data:
 
 networks:
   delivery-net:

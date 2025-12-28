@@ -1,7 +1,6 @@
 package com.delivery.courierservice.controller;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.delivery.courierservice.model.Courier;
@@ -43,7 +41,7 @@ public class CourierController {
 
     // GET /couriers/{id} - ID ile courier bul
     @GetMapping("/{id}")
-    public ResponseEntity<Courier> getCourier(@PathVariable UUID id) {
+    public ResponseEntity<Courier> getCourier(@PathVariable Long id) {
         Courier courier = courierService.getById(id);
         if (courier == null) {
             return ResponseEntity.notFound().build();
@@ -61,12 +59,12 @@ public class CourierController {
     // PUT /couriers/{id}/assign - Courier'a shipment ata
     @PutMapping("/{id}/assign")
     public ResponseEntity<?> assignShipment(
-            @PathVariable UUID id,
-            @RequestParam String shipmentId) {
-        Courier updated = courierService.assignShipment(id, shipmentId);
+            @PathVariable Long id,
+            @RequestBody AssignRequest request) {
+        Courier updated = courierService.assignShipment(id, request.getShipmentId());
         if (updated == null) {
             return ResponseEntity.badRequest()
-                .body("Courier not found or not available");
+                    .body("Courier not found or not available");
         }
         return ResponseEntity.ok(updated);
     }
@@ -74,10 +72,10 @@ public class CourierController {
     // PUT /couriers/{id}/status - Courier durumunu güncelle
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateStatus(
-            @PathVariable UUID id,
-            @RequestParam String status) {
+            @PathVariable Long id,
+            @RequestBody StatusRequest request) {
         try {
-            Courier updated = courierService.updateStatus(id, status);
+            Courier updated = courierService.updateStatus(id, request.getStatus());
             if (updated == null) {
                 return ResponseEntity.notFound().build();
             }
@@ -90,9 +88,9 @@ public class CourierController {
     // PUT /couriers/{id}/location - Courier konumunu güncelle
     @PutMapping("/{id}/location")
     public ResponseEntity<?> updateLocation(
-            @PathVariable UUID id,
-            @RequestParam String location) {
-        Courier updated = courierService.updateLocation(id, location);
+            @PathVariable Long id,
+            @RequestBody LocationRequest request) {
+        Courier updated = courierService.updateLocation(id, request.getLocation());
         if (updated == null) {
             return ResponseEntity.notFound().build();
         }
@@ -101,7 +99,7 @@ public class CourierController {
 
     // DELETE /couriers/{id} - Courier'ı sil
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCourier(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteCourier(@PathVariable Long id) {
         courierService.deleteCourier(id);
         return ResponseEntity.noContent().build();
     }
@@ -110,5 +108,42 @@ public class CourierController {
     @GetMapping("/statuses")
     public ResponseEntity<CourierStatus[]> getAvailableStatuses() {
         return ResponseEntity.ok(CourierStatus.values());
+    }
+
+    // Request DTOs
+    public static class AssignRequest {
+        private Long shipmentId;
+
+        public Long getShipmentId() {
+            return shipmentId;
+        }
+
+        public void setShipmentId(Long shipmentId) {
+            this.shipmentId = shipmentId;
+        }
+    }
+
+    public static class StatusRequest {
+        private String status;
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+    }
+
+    public static class LocationRequest {
+        private String location;
+
+        public String getLocation() {
+            return location;
+        }
+
+        public void setLocation(String location) {
+            this.location = location;
+        }
     }
 }

@@ -1,7 +1,6 @@
 package com.delivery.shipmentservice.service;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +18,7 @@ public class ShipmentService {
     private final ShipmentEventPublisher publisher;
 
     public ShipmentService(ShipmentRepository repository,
-                           ShipmentEventPublisher publisher) {
+            ShipmentEventPublisher publisher) {
         this.repository = repository;
         this.publisher = publisher;
     }
@@ -28,7 +27,7 @@ public class ShipmentService {
         return repository.findAll();
     }
 
-    public Shipment getById(UUID id) {
+    public Shipment getById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Shipment not found: " + id));
     }
@@ -49,43 +48,39 @@ public class ShipmentService {
     }
 
     @Transactional
-public Shipment updateStatus(UUID id, ShipmentStatus status) {
+    public Shipment updateStatus(Long id, ShipmentStatus status) {
 
-    Shipment shipment = repository.findById(id).orElse(null);
-    if (shipment == null) {
-        return null;
+        Shipment shipment = repository.findById(id).orElse(null);
+        if (shipment == null) {
+            return null;
+        }
+
+        shipment.setStatus(status);
+        Shipment updated = repository.save(shipment);
+
+        ShipmentStatusChangedEvent event = new ShipmentStatusChangedEvent(
+                updated.getId().toString(),
+                updated.getSender(),
+                updated.getReceiver(),
+                updated.getStatus().name());
+
+        publisher.publishStatusChanged(event);
+
+        return updated;
     }
 
-    shipment.setStatus(status);
-    Shipment updated = repository.save(shipment);
-
-    ShipmentStatusChangedEvent event =
-            new ShipmentStatusChangedEvent(
-                    updated.getId().toString(),
-                    updated.getSender(),
-                    updated.getReceiver(),
-                    updated.getStatus().name()
-            );
-
-    publisher.publishStatusChanged(event);
-
-    return updated;
-}
-@Transactional
-public void deleteShipment(UUID id) {
-    repository.deleteById(id);
-}
-
+    @Transactional
+    public void deleteShipment(Long id) {
+        repository.deleteById(id);
+    }
 
     // 🔥 EVENT OLUŞTURMA + PUBLISH TEK YER
     private void publishEvent(Shipment shipment) {
-        ShipmentStatusChangedEvent event =
-                new ShipmentStatusChangedEvent(
-                        shipment.getId().toString(),
-                        shipment.getSender(),
-                        shipment.getReceiver(),
-                        shipment.getStatus().name()
-                );
+        ShipmentStatusChangedEvent event = new ShipmentStatusChangedEvent(
+                shipment.getId().toString(),
+                shipment.getSender(),
+                shipment.getReceiver(),
+                shipment.getStatus().name());
 
         try {
             publisher.publishStatusChanged(event);

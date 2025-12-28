@@ -12,3 +12,14 @@ spring:
           uri: http://shipment-service:8081
           predicates:
             - Path=/shipments/**
+
+        - id: courier-service
+          uri: http://courier-service:8083
+          predicates:
+            - Path=/couriers/**
+
+        - id: notification-service
+          uri: http://notification-service:8082
+          predicates:
+            - Path=/notifications/**
+    

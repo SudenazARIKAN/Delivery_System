@@ -1,7 +1,6 @@
 package com.delivery.shipmentservice.controller;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +36,7 @@ public class ShipmentController {
 
     // GET /shipments/{id} - ID ile gönderi bul
     @GetMapping("/{id}")
-    public ResponseEntity<Shipment> getShipment(@PathVariable UUID id) {
+    public ResponseEntity<Shipment> getShipment(@PathVariable Long id) {
         Shipment shipment = shipmentService.getById(id);
         if (shipment == null) {
             return ResponseEntity.notFound().build();
@@ -52,32 +51,27 @@ public class ShipmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-
-
     // PUT /shipments/{id}/status - Gönderi durumunu güncelle
 
-   @PutMapping("/{id}/status")
-public ResponseEntity<Shipment> updateStatus(
-        @PathVariable UUID id,
-        @RequestParam ShipmentStatus status
-) {
-    Shipment updated = shipmentService.updateStatus(id, status);
-    return ResponseEntity.ok(updated);
-}
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Shipment> updateStatus(
+            @PathVariable Long id,
+            @RequestParam ShipmentStatus status) {
+        Shipment updated = shipmentService.updateStatus(id, status);
+        return ResponseEntity.ok(updated);
+    }
 
-          
-       //  catch (IllegalArgumentException e) {
-          //  return ResponseEntity.badRequest().body(e.getMessage());
-       // }
-    
+    // catch (IllegalArgumentException e) {
+    // return ResponseEntity.badRequest().body(e.getMessage());
+    // }
 
     // DELETE /shipments/{id} - Gönderiyi sil
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteShipment(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteShipment(@PathVariable Long id) {
         shipmentService.deleteShipment(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     // GET /shipments/statuses - Kullanılabilir tüm statusları listele
     @GetMapping("/statuses")
     public ResponseEntity<ShipmentStatus[]> getAvailableStatuses() {

@@ -1,7 +1,6 @@
 package com.delivery.courierservice.service;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +26,7 @@ public class CourierService {
         return repository.findByStatus(CourierStatus.AVAILABLE);
     }
 
-    public Courier getById(UUID id) {
+    public Courier getById(Long id) {
         return repository.findById(id).orElse(null);
     }
 
@@ -38,12 +37,12 @@ public class CourierService {
         newCourier.setPhone(courier.getPhone());
         newCourier.setStatus(CourierStatus.AVAILABLE);
         newCourier.setCurrentLocation(courier.getCurrentLocation());
-        
+
         return repository.save(newCourier);
     }
 
     @Transactional
-    public Courier assignShipment(UUID courierId, String shipmentId) {
+    public Courier assignShipment(Long courierId, Long shipmentId) {
         Courier courier = repository.findById(courierId).orElse(null);
         if (courier != null && courier.getStatus() == CourierStatus.AVAILABLE) {
             courier.setAssignedShipmentId(shipmentId);
@@ -54,18 +53,18 @@ public class CourierService {
     }
 
     @Transactional
-    public Courier updateStatus(UUID courierId, String statusString) {
+    public Courier updateStatus(Long courierId, String statusString) {
         Courier courier = repository.findById(courierId).orElse(null);
         if (courier != null) {
             try {
                 CourierStatus status = CourierStatus.valueOf(statusString.toUpperCase());
                 courier.setStatus(status);
-                
+
                 // Eğer AVAILABLE oluyorsa, atanmış shipment'ı temizle
                 if (status == CourierStatus.AVAILABLE) {
                     courier.setAssignedShipmentId(null);
                 }
-                
+
                 return repository.save(courier);
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Invalid status: " + statusString);
@@ -75,7 +74,7 @@ public class CourierService {
     }
 
     @Transactional
-    public Courier updateLocation(UUID courierId, String location) {
+    public Courier updateLocation(Long courierId, String location) {
         Courier courier = repository.findById(courierId).orElse(null);
         if (courier != null) {
             courier.setCurrentLocation(location);
@@ -85,7 +84,7 @@ public class CourierService {
     }
 
     @Transactional
-    public void deleteCourier(UUID id) {
+    public void deleteCourier(Long id) {
         repository.deleteById(id);
     }
 }

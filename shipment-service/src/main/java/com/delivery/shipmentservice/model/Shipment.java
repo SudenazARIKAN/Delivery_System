@@ -1,7 +1,5 @@
 package com.delivery.shipmentservice.model;
 
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,8 +14,8 @@ import jakarta.persistence.Table;
 public class Shipment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private String sender;
@@ -29,9 +27,10 @@ public class Shipment {
     @Column(nullable = false)
     private ShipmentStatus status;
 
-    public Shipment() {}
+    public Shipment() {
+    }
 
-    public Shipment(UUID id, String sender, String receiver, ShipmentStatus status) {
+    public Shipment(Long id, String sender, String receiver, ShipmentStatus status) {
         this.id = id;
         this.sender = sender;
         this.receiver = receiver;
@@ -39,35 +38,36 @@ public class Shipment {
     }
 
     // Getters and Setters
-    public UUID getId() { 
-        return id; 
-    }
-    
-    public void setId(UUID id) { 
-        this.id = id; 
+    public Long getId() {
+        return id;
     }
 
-    public String getSender() { 
-        return sender; 
-    }
-    
-    public void setSender(String sender) { 
-        this.sender = sender; 
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getReceiver() { 
-        return receiver; 
-    }
-    
-    public void setReceiver(String receiver) { 
-        this.receiver = receiver; 
+    public String getSender() {
+        return sender;
     }
 
-    public ShipmentStatus getStatus() { 
-        return status; 
+    public void setSender(String sender) {
+        this.sender = sender;
     }
-    
-    public void setStatus(ShipmentStatus status) { 
-        this.status = status; 
+
+    public String getReceiver() {
+        return receiver;
     }
+
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
+    }
+
+    public ShipmentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ShipmentStatus status) {
+        this.status = status;
+    }
+
 }

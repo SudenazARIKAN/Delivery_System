@@ -1,7 +1,5 @@
 package com.delivery.courierservice.model;
 
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,8 +14,8 @@ import jakarta.persistence.Table;
 public class Courier {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private String name;
@@ -33,12 +31,13 @@ public class Courier {
     private String currentLocation;
 
     @Column(name = "assigned_shipment_id")
-    private String assignedShipmentId;
+    private Long assignedShipmentId;
 
-    public Courier() {}
+    public Courier() {
+    }
 
-    public Courier(UUID id, String name, String phone, CourierStatus status, 
-                   String currentLocation, String assignedShipmentId) {
+    public Courier(Long id, String name, String phone, CourierStatus status,
+            String currentLocation, Long assignedShipmentId) {
         this.id = id;
         this.name = name;
         this.phone = phone;
@@ -48,11 +47,11 @@ public class Courier {
     }
 
     // Getters and Setters
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -88,11 +87,11 @@ public class Courier {
         this.currentLocation = currentLocation;
     }
 
-    public String getAssignedShipmentId() {
+    public Long getAssignedShipmentId() {
         return assignedShipmentId;
     }
 
-    public void setAssignedShipmentId(String assignedShipmentId) {
+    public void setAssignedShipmentId(Long assignedShipmentId) {
         this.assignedShipmentId = assignedShipmentId;
     }
 }
