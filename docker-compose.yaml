@@ -75,6 +75,7 @@ services:
       - postgres
       - courier-db
       - notification-db
+      - auth-db
     networks:
       - delivery-net
 
@@ -144,6 +145,19 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     networks:
       - delivery-net
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: always
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: delivery-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      - kafka
+    networks:
+      - delivery-net
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -179,6 +193,38 @@ services:
     networks:
       - delivery-net
 
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    restart: always
+    ports:
+      - "8084:8084"
+    depends_on:
+      - auth-db
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/authdb
+      SPRING_DATASOURCE_USERNAME: auth_user
+      SPRING_DATASOURCE_PASSWORD: auth_password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - delivery-net
+
+  auth-db:
+    image: postgres:16
+    container_name: auth-db
+    restart: always
+    environment:
+      POSTGRES_DB: authdb
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_password
+    ports:
+      - "5436:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+    networks:
+      - delivery-net
+
   api-gateway:
     build: ./gateway-service
     container_name: api-gateway
@@ -189,6 +235,7 @@ services:
       - shipment-service
       - courier-service
       - notification-service
+      - auth-service
     networks:
       - delivery-net
 
@@ -196,6 +243,7 @@ volumes:
   postgres_data:
   courier_data:
   notification_data:
+  auth_data:
 
 networks:
   delivery-net:
