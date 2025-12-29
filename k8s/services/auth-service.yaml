@@ -1,0 +1,48 @@
+# Auth Service - docker-compose.yaml ile birebir uyumlu
+# Bağımlılık: SADECE auth-db (kafka YOK!)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      initContainers:
+      - name: wait-for-auth-db
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z auth-db 5432; do echo "Waiting for auth-db..."; sleep 3; done; echo "PostgreSQL is ready!"']
+      containers:
+      - name: auth-service
+        image: auth-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8084
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: docker
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:postgresql://auth-db:5432/authdb
+        - name: SPRING_DATASOURCE_USERNAME
+          value: auth_user
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: auth_password
+        - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+          value: update
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+spec:
+  selector:
+    app: auth-service
+  ports:
+  - port: 8084
+    targetPort: 8084

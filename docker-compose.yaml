@@ -62,20 +62,44 @@ services:
     networks:
       - delivery-net
 
+  auth-db:
+    image: postgres:16
+    container_name: auth-db
+    restart: always
+    environment:
+      POSTGRES_DB: authdb
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_password
+    ports:
+      - "5436:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d authdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - delivery-net
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin-shipment
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@shipment.com
+      PGADMIN_DEFAULT_EMAIL: admin@delivery.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
     depends_on:
-      - postgres
-      - courier-db
-      - notification-db
-      - auth-db
+      postgres:
+        condition: service_healthy
+      courier-db:
+        condition: service_healthy
+      notification-db:
+        condition: service_healthy
+      auth-db:
+        condition: service_healthy
     networks:
       - delivery-net
 
@@ -106,6 +130,20 @@ services:
     networks:
       - delivery-net
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: always
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: delivery-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      - kafka
+    networks:
+      - delivery-net
+
   shipment-service:
     build: ./shipment-service
     container_name: shipment-service
@@ -123,53 +161,6 @@ services:
       SPRING_DATASOURCE_USERNAME: shipment
       SPRING_DATASOURCE_PASSWORD: 12345
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    networks:
-      - delivery-net
-
-  notification-service:
-    build: ./notification-service
-    container_name: notification-service
-    restart: always
-    ports:
-      - "8082:8082"
-    depends_on:
-      kafka:
-        condition: service_started
-      notification-db:
-        condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/notificationdb
-      SPRING_DATASOURCE_USERNAME: notification
-      SPRING_DATASOURCE_PASSWORD: 12345
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    networks:
-      - delivery-net
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
-    restart: always
-    ports:
-      - "8090:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: delivery-cluster
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-    depends_on:
-      - kafka
-    networks:
-      - delivery-net
-
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
-    restart: always
-    ports:
-      - "8090:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: delivery-cluster
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-    depends_on:
-      - kafka
     networks:
       - delivery-net
 
@@ -193,6 +184,26 @@ services:
     networks:
       - delivery-net
 
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    restart: always
+    ports:
+      - "8082:8082"
+    depends_on:
+      kafka:
+        condition: service_started
+      notification-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notification-db:5432/notificationdb
+      SPRING_DATASOURCE_USERNAME: notification
+      SPRING_DATASOURCE_PASSWORD: 12345
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - delivery-net
+
   auth-service:
     build: ./auth-service
     container_name: auth-service
@@ -200,28 +211,14 @@ services:
     ports:
       - "8084:8084"
     depends_on:
-      - auth-db
+      auth-db:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/authdb
       SPRING_DATASOURCE_USERNAME: auth_user
       SPRING_DATASOURCE_PASSWORD: auth_password
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-    networks:
-      - delivery-net
-
-  auth-db:
-    image: postgres:16
-    container_name: auth-db
-    restart: always
-    environment:
-      POSTGRES_DB: authdb
-      POSTGRES_USER: auth_user
-      POSTGRES_PASSWORD: auth_password
-    ports:
-      - "5436:5432"
-    volumes:
-      - auth_data:/var/lib/postgresql/data
     networks:
       - delivery-net
 

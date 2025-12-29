@@ -25,21 +25,21 @@ public class KafkaConfig {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "notification-service-group");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonDeserializer.class);
-        
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                org.springframework.kafka.support.serializer.JacksonJsonDeserializer.class);
+
         // JSON deserializer config
-        props.put(org.springframework.kafka.support.serializer.JsonDeserializer.TRUSTED_PACKAGES, "*");
-        props.put(org.springframework.kafka.support.serializer.JsonDeserializer.VALUE_DEFAULT_TYPE, ShipmentStatusChangedEvent.class.getName());
-        props.put(org.springframework.kafka.support.serializer.JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-        
+        props.put(org.springframework.kafka.support.serializer.JacksonJsonDeserializer.TRUSTED_PACKAGES, "*");
+        props.put(org.springframework.kafka.support.serializer.JacksonJsonDeserializer.VALUE_DEFAULT_TYPE,
+                ShipmentStatusChangedEvent.class.getName());
+        props.put(org.springframework.kafka.support.serializer.JacksonJsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ShipmentStatusChangedEvent> 
-            kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, ShipmentStatusChangedEvent> factory =
-            new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, ShipmentStatusChangedEvent> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, ShipmentStatusChangedEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }

@@ -1,0 +1,51 @@
+# Shipment Service - docker-compose.yaml ile birebir uyumlu
+# Bağımlılıklar: postgres (pg-shipment), kafka
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipment-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shipment-service
+  template:
+    metadata:
+      labels:
+        app: shipment-service
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z pg-shipment 5432; do echo "Waiting for pg-shipment..."; sleep 3; done; echo "PostgreSQL is ready!"']
+      - name: wait-for-kafka
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z kafka 9092; do echo "Waiting for kafka..."; sleep 3; done; echo "Kafka is ready!"']
+      containers:
+      - name: shipment-service
+        image: shipment-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: docker
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:postgresql://pg-shipment:5432/shipmentdb
+        - name: SPRING_DATASOURCE_USERNAME
+          value: shipment
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: "12345"
+        - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+          value: kafka:9092
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shipment-service
+spec:
+  selector:
+    app: shipment-service
+  ports:
+  - port: 8081
+    targetPort: 8081

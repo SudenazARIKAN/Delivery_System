@@ -28,43 +28,36 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    // ✅ DÜZELTİLMİŞ - userId, role, email eklenmiş
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", user.getRole().name());      // ← ROLE
-        claims.put("email", user.getEmail());           // ← EMAIL
-        claims.put("username", user.getUsername());     // ← USERNAME
+        claims.put("role", user.getRole().name());      
+        claims.put("email", user.getEmail());           
+        claims.put("username", user.getUsername());     
         
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(user.getId().toString())    // ← USER ID (subject'e)
+                .setSubject(user.getId().toString()) 
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
-
-    // ✅ YENİ - userId çıkarma
+    
     public Long extractUserId(String token) {
         return Long.parseLong(extractAllClaims(token).getSubject());
     }
 
-    // ✅ YENİ - role çıkarma
     public String extractRole(String token) {
         return extractAllClaims(token).get("role", String.class);
     }
 
-    // ✅ YENİ - email çıkarma
     public String extractEmail(String token) {
         return extractAllClaims(token).get("email", String.class);
     }
 
-    // ✅ MEVCUT - username çıkarma (düzeltilmiş)
     public String extractUsername(String token) {
         return extractAllClaims(token).get("username", String.class);
     }
-
-    // ✅ YENİ - Token geçerli mi?
     public boolean isTokenValid(String token) {
         try {
             extractAllClaims(token);
@@ -74,7 +67,6 @@ public class JwtService {
         }
     }
 
-    // ✅ YENİ - Token süresi dolmuş mu?
     private boolean isTokenExpired(String token) {
         return extractAllClaims(token).getExpiration().before(new Date());
     }

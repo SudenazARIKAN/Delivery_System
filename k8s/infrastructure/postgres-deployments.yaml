@@ -1,0 +1,249 @@
+# PostgreSQL Veritabanları - docker-compose.yaml ile birebir uyumlu
+---
+# Shipment DB (pg-shipment) - postgres:15
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-shipment-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg-shipment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg-shipment
+  template:
+    metadata:
+      labels:
+        app: pg-shipment
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: shipmentdb
+        - name: POSTGRES_USER
+          value: shipment
+        - name: POSTGRES_PASSWORD
+          value: "12345"
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        readinessProbe:
+          exec:
+            command: ["pg_isready", "-U", "shipment", "-d", "shipmentdb"]
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: postgres-shipment-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-shipment
+spec:
+  selector:
+    app: pg-shipment
+  ports:
+  - port: 5432
+    targetPort: 5432
+---
+# Courier DB - postgres:16
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: courier-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: courier-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: courier-db
+  template:
+    metadata:
+      labels:
+        app: courier-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: courierdb
+        - name: POSTGRES_USER
+          value: courier
+        - name: POSTGRES_PASSWORD
+          value: courier
+        volumeMounts:
+        - name: courier-data
+          mountPath: /var/lib/postgresql/data
+        readinessProbe:
+          exec:
+            command: ["pg_isready", "-U", "courier", "-d", "courierdb"]
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: courier-data
+        persistentVolumeClaim:
+          claimName: courier-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: courier-db
+spec:
+  selector:
+    app: courier-db
+  ports:
+  - port: 5432
+    targetPort: 5432
+---
+# Notification DB - postgres:16
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: notification-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-db
+  template:
+    metadata:
+      labels:
+        app: notification-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: notificationdb
+        - name: POSTGRES_USER
+          value: notification
+        - name: POSTGRES_PASSWORD
+          value: "12345"
+        volumeMounts:
+        - name: notification-data
+          mountPath: /var/lib/postgresql/data
+        readinessProbe:
+          exec:
+            command: ["pg_isready", "-U", "notification", "-d", "notificationdb"]
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: notification-data
+        persistentVolumeClaim:
+          claimName: notification-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-db
+spec:
+  selector:
+    app: notification-db
+  ports:
+  - port: 5432
+    targetPort: 5432
+---
+# Auth DB - postgres:16
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: auth-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-db
+  template:
+    metadata:
+      labels:
+        app: auth-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: authdb
+        - name: POSTGRES_USER
+          value: auth_user
+        - name: POSTGRES_PASSWORD
+          value: auth_password
+        volumeMounts:
+        - name: auth-data
+          mountPath: /var/lib/postgresql/data
+        readinessProbe:
+          exec:
+            command: ["pg_isready", "-U", "auth_user", "-d", "authdb"]
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: auth-data
+        persistentVolumeClaim:
+          claimName: auth-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-db
+spec:
+  selector:
+    app: auth-db
+  ports:
+  - port: 5432
+    targetPort: 5432

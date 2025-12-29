@@ -1,13 +1,14 @@
 package com.delivery.authservice.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.delivery.authservice.dto.AuthResponse;
 import com.delivery.authservice.dto.LoginRequest;
 import com.delivery.authservice.dto.RegisterRequest;
+import com.delivery.authservice.model.Role;
 import com.delivery.authservice.model.User;
 import com.delivery.authservice.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import com.delivery.authservice.model.Role;
 @Service
 public class AuthService {
 
@@ -51,7 +52,6 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());
 
-             // ✅ DÜZELTME: Eğer role gönderilmemişse USER yap
         user.setRole(request.getRole() != null ? request.getRole() : Role.USER);
 
         userRepository.save(user);
