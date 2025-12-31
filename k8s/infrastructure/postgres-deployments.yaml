@@ -38,6 +38,8 @@ spec:
           value: shipment
         - name: POSTGRES_PASSWORD
           value: "12345"
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         volumeMounts:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data
@@ -100,6 +102,8 @@ spec:
           value: courier
         - name: POSTGRES_PASSWORD
           value: courier
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         volumeMounts:
         - name: courier-data
           mountPath: /var/lib/postgresql/data
@@ -162,6 +166,8 @@ spec:
           value: notification
         - name: POSTGRES_PASSWORD
           value: "12345"
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         volumeMounts:
         - name: notification-data
           mountPath: /var/lib/postgresql/data
@@ -224,6 +230,8 @@ spec:
           value: auth_user
         - name: POSTGRES_PASSWORD
           value: auth_password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         volumeMounts:
         - name: auth-data
           mountPath: /var/lib/postgresql/data
