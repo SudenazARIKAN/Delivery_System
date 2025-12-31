@@ -2,20 +2,20 @@ package com.delivery.authservice.dto;
 
 public class AuthResponse {
 
-    private String token;
+    private String message;
 
     public AuthResponse() {
     }
 
-    public AuthResponse(String token) {
-        this.token = token;
+    public AuthResponse(String message) {
+        this.message = message;
     }
 
-    public String getToken() {
-        return token;
+    public String getMessage() {
+        return message;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

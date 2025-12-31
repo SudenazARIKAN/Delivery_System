@@ -18,13 +18,3 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-  security:
-    user:
-      name: admin
-      password: admin
-
-jwt:
-  secret: my-super-secret-key-that-is-at-least-thirty-two-bytes-long
-  expiration: 3600000 # 1 hour
-

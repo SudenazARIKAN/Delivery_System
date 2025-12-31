@@ -227,7 +227,7 @@ services:
     container_name: api-gateway
     restart: always
     ports:
-      - "8080:8080"
+      - "8888:8080"
     depends_on:
       - shipment-service
       - courier-service

@@ -38,6 +38,7 @@ public class ShipmentService {
         Shipment newShipment = new Shipment();
         newShipment.setSender(shipment.getSender());
         newShipment.setReceiver(shipment.getReceiver());
+        newShipment.setAddress(shipment.getAddress());
         newShipment.setStatus(ShipmentStatus.CREATED);
 
         Shipment saved = repository.save(newShipment);
@@ -62,6 +63,7 @@ public class ShipmentService {
                 updated.getId().toString(),
                 updated.getSender(),
                 updated.getReceiver(),
+                updated.getAddress(),
                 updated.getStatus().name());
 
         publisher.publishStatusChanged(event);
@@ -80,6 +82,7 @@ public class ShipmentService {
                 shipment.getId().toString(),
                 shipment.getSender(),
                 shipment.getReceiver(),
+                shipment.getAddress(),
                 shipment.getStatus().name());
 
         try {

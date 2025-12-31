@@ -23,6 +23,9 @@ public class Shipment {
     @Column(nullable = false)
     private String receiver;
 
+    @Column(nullable = false)
+    private String address;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ShipmentStatus status;
@@ -30,10 +33,11 @@ public class Shipment {
     public Shipment() {
     }
 
-    public Shipment(Long id, String sender, String receiver, ShipmentStatus status) {
+    public Shipment(Long id, String sender, String receiver, String address, ShipmentStatus status) {
         this.id = id;
         this.sender = sender;
         this.receiver = receiver;
+        this.address = address;
         this.status = status;
     }
 
@@ -60,6 +64,14 @@ public class Shipment {
 
     public void setReceiver(String receiver) {
         this.receiver = receiver;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public ShipmentStatus getStatus() {
